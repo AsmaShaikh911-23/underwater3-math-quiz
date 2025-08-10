@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Underwater Math Adventure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: linear-gradient(to bottom, #1a6fc9, #0d47a1);
+      color: white;
+      overflow: hidden;
+      height: 100vh;
+    }
+    
+    .bubble {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      animation: float-up linear infinite;
+    }
+    
+    @keyframes float-up {
+      0% {
+        transform: translateY(100vh) scale(0.5);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.5;
+      }
+      100% {
+        transform: translateY(-100px) scale(1.2);
+        opacity: 0;
+      }
+    }
+    
+    .sea-creature {
+      position: absolute;
+      font-size: 40px;
+      animation: swim linear infinite;
+      z-index: -1;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    
+    @keyframes swim {
+      0% {
+        transform: translateX(-100px);
+      }
+      100% {
+        transform: translateX(calc(100vw + 100px));
+      }
+    }
+    
+    .quiz-container {
+      max-width: 700px;
+      margin: 30px auto;
+      background: rgba(0, 0, 50, 0.7);
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      position: relative;
+      z-index: 1;
+      animation: fadeIn 1s ease-in-out;
+      border: 3px solid #4fc3f7;
+    }
+    
+    #question-block {
+      animation: fadeIn 0.7s ease-in-out;
+    }
+    
+    h2 {
+      text-align: center;
+      color: #4fc3f7;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    
+    .option {
+      margin: 15px 0;
+      padding: 15px;
+      background-color: rgba(79, 195, 247, 0.3);
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 18px;
+      border: 2px solid #4fc3f7;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .option:hover {
+      background-color: rgba(79, 195, 247, 0.5);
+      transform: scale(1.02);
+      box-shadow: 0 0 15px rgba(79, 195, 247, 0.8);
+    }
+    
+    .buttons {
+      text-align: center;
+      margin-top: 25px;
+    }
+    
+    button {
+      margin: 10px;
+      padding: 12px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      background-color: #4fc3f7;
+      color: #01579b;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    button:hover {
+      background-color: #81d4fa;
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    #timer {
+      font-size: 22px;
+      text-align: center;
+      color: #ffeb3b;
+      margin: 15px 0;
+      font-weight: bold;
+      animation: pulse 1s infinite alternate;
+    }
+    
+    @keyframes pulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
+    
+    #scorecard {
+      font-size: 28px;
+      text-align: center;
+      color: #ffeb3b;
+      margin: 20px 0;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    #explanation {
+      background-color: rgba(0, 150, 136, 0.7);
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 20px;
+      font-size: 16px;
+      line-height: 1.5;
+      border: 2px dashed #ffeb3b;
+      animation: wiggle 0.5s ease;
+    }
+    
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(2deg); }
+      75% { transform: rotate(-2deg); }
+    }
+    
+    .treasure-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      text-align: center;
+    }
+    
+    .treasure-chest {
+      font-size: 150px;
+      animation: bounce 2s infinite;
+      transition: all 0.3s ease;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .treasure-chest:hover {
+      transform: scale(1.1);
+    }
+    
+    .treasure-open {
+      animation: treasureOpen 0.5s forwards;
+    }
+    
+    @keyframes treasureOpen {
+      0% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-30px) rotate(-10deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    .treasure-content {
+      position: absolute;
+      font-size: 100px;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: all 0.5s ease 0.5s;
+    }
+    
+    .treasure-revealed .treasure-content {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-150px);
+    }
+    
+    .treasure-visible {
+      opacity: 1;
+    }
+    
+    .correct-answer {
+      animation: correctPulse 0.5s;
+      background-color: rgba(76, 175, 80, 0.7) !important;
+      box-shadow: 0 0 20px rgba(76, 175, 80, 0.8);
+    }
+    
+    @keyframes correctPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    
+    .wrong-answer {
+      animation: shake 0.5s;
+      background-color: rgba(244, 67, 54, 0.7) !important;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); }
+      40%, 80% { transform: translateX(5px); }
+    }
+    
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    
+    .progress {
+      height: 100%;
+      background: linear-gradient(to right, #4fc3f7, #00bcd4);
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    
+    .star-rating {
+      text-align: center;
+      margin: 15px 0;
+      font-size: 30px;
+    }
+    
+    .star {
+      color: gold;
+      text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+      display: inline-block;
+      animation: starTwinkle 1s infinite alternate;
+    }
+    
+    @keyframes starTwinkle {
+      from { transform: scale(1); opacity: 0.8; }
+      to { transform: scale(1.2); opacity: 1; }
+    }
+    
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #f00;
+      border-radius: 50%;
+      animation: confetti-fall 3s linear forwards;
+      z-index: 100;
+    }
+    
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    
+    .jellyfish {
+      position: absolute;
+      font-size: 40px;
+      animation: jellyFloat 8s ease-in-out infinite;
+      z-index: -1;
+    }
+    
+    @keyframes jellyFloat {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-50px) rotate(5deg);
+      }
+    }
+    
+    .click-effect {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.7);
+      pointer-events: none;
+      animation: clickRipple 0.6s ease-out;
+      transform: scale(0);
+    }
+    
+    @keyframes clickRipple {
+      to {
+        transform: scale(3);
+        opacity: 0;
+      }
+    }
+    
+    .option::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+    }
+    
+    .option:hover::before {
+      left: 100%;
+    }
+  </style>
+</head>
+<body>
+  <audio id="bgMusic" autoplay loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/10/30/audio_4f4d7dcf9c.mp3" type="audio/mp3">
+  </audio>
+  <audio id="correctSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c1f5bd292e.mp3" preload="auto"></audio>
+  <audio id="wrongSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_ebd328f854.mp3" preload="auto"></audio>
+  <audio id="cheerSound" src="https://cdn.pixabay.com/download/audio/2022/03/19/audio_9b7b8a6a5e.mp3" preload="auto"></audio>
+  <audio id="bubbleSound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_38a8f94408.mp3" preload="auto"></audio>
+  <audio id="treasureSound" src="https://cdn.pixabay.com/download/audio/2022/03/19/audio_3a5feb5a4e.mp3" preload="auto"></audio>
+
+  <!-- Background elements -->
+  <div id="bubbles-container"></div>
+  <div id="sea-creatures-container"></div>
+  <div id="jellyfish-container"></div>
+  
+  <div class="treasure-container hidden" id="treasureContainer">
+    <div class="treasure-chest" id="treasureChest">🧰
+      <div class="treasure-content">💎</div>
+    </div>
+  </div>
+
+  <div class="quiz-container">
+    <div class="progress-bar">
+      <div class="progress" id="progress"></div>
+    </div>
+    
+    <div id="question-block">
+      <h2 id="question"></h2>
+      <div id="options"></div>
+      <div id="explanation" class="hidden"></div>
+      <div id="timer"></div>
+    </div>
+    
+    <div class="buttons">
+      <button onclick="prevQuestion()">← Back</button>
+      <button onclick="nextQuestion()">Next →</button>
+    </div>
+    
+    <div id="scorecard" class="hidden">
+      <div class="star-rating" id="stars"></div>
+    </div>
+    
+    <div class="buttons hidden" id="retakeContainer">
+      <button onclick="startQuiz()">Play Again!</button>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      { q: "Which number is divisible by both 2 and 3?", options: ["24", "35", "41", "13"], answer: 0, explanation: "24 ÷ 2 = 12 and 24 ÷ 3 = 8. It's divisible by both!" },
+      { q: "Which number is not divisible by 3?", options: ["18", "21", "27", "19"], answer: 3, explanation: "19 ÷ 3 leaves a remainder. It's not divisible by 3." },
+      { q: "What is the rule for divisibility by 2?", options: ["Number ends with 0", "Number ends with 2, 4, 6, 8, or 0", "Sum of digits is 9", "Last digit is 5"], answer: 1, explanation: "A number is divisible by 2 if it ends in 0, 2, 4, 6, or 8." },
+      { q: "What is the rule for divisibility by 3?", options: ["Number ends in 3", "Sum of digits is divisible by 3", "All digits are 3", "Last digit is 3"], answer: 1, explanation: "If the sum of the digits is divisible by 3, the number is too." },
+      { q: "Which number is divisible by 5?", options: ["22", "24", "25", "27"], answer: 2, explanation: "25 ends in 5, so it is divisible by 5." },
+      { q: "What is the rule for divisibility by 10?", options: ["Ends in 5", "Even number", "Ends in 0", "Sum of digits = 10"], answer: 2, explanation: "A number is divisible by 10 if it ends in 0." },
+      { q: "Which of the following is divisible by 9?", options: ["729", "728", "730", "732"], answer: 0, explanation: "Sum of 729's digits is 7+2+9 = 18, and 18 is divisible by 9." },
+      { q: "Which number is not divisible by 2?", options: ["18", "20", "25", "32"], answer: 2, explanation: "25 is an odd number and not divisible by 2." },
+      { q: "Which number is divisible by 6?", options: ["18", "22", "25", "33"], answer: 0, explanation: "18 is divisible by both 2 and 3, so it is divisible by 6." },
+      { q: "Which number is divisible by 4?", options: ["13", "24", "31", "27"], answer: 1, explanation: "24 ÷ 4 = 6. It's evenly divisible." },
+      { q: "Is 135 divisible by 3?", options: ["Yes", "No", "Only by 5", "Only by 2"], answer: 0, explanation: "1+3+5 = 9. Since 9 is divisible by 3, so is 135." },
+      { q: "What is the sum of digits of 378?", options: ["15", "16", "18", "20"], answer: 2, explanation: "3+7+8 = 18. 18 is divisible by both 3 and 9." },
+      { q: "Which of these numbers is divisible by 2, 3, and 6?", options: ["18", "20", "30", "35"], answer: 0, explanation: "18 is divisible by 2, 3, and therefore by 6." },
+      { q: "Is 312 divisible by 6?", options: ["Yes", "No", "Only by 2", "Only by 3"], answer: 0, explanation: "312 is divisible by both 2 and 3, so it is divisible by 6." },
+      { q: "Which number is divisible by 10?", options: ["15", "50", "55", "75"], answer: 1, explanation: "50 ends in 0, so it is divisible by 10." },
+      { q: "Is 912 divisible by 9?", options: ["Yes", "No", "Only by 3", "Only by 6"], answer: 0, explanation: "9+1+2 = 12, which is divisible by 3 and not 9. Correction: 912 is NOT divisible by 9." },
+      { q: "Which number leaves a remainder when divided by 5?", options: ["10", "25", "33", "20"], answer: 2, explanation: "33 ÷ 5 = 6 remainder 3. So it leaves a remainder." },
+      { q: "Which number ends in 5 and is divisible by 5?", options: ["26", "35", "44", "48"], answer: 1, explanation: "35 ends in 5, so it's divisible by 5." },
+      { q: "Which of these numbers is NOT divisible by 10?", options: ["20", "30", "40", "45"], answer: 3, explanation: "45 ends in 5, not 0, so it is not divisible by 10." },
+      { q: "Which number has 6 as a factor?", options: ["18", "20", "25", "35"], answer: 0, explanation: "6 × 3 = 18. So 18 has 6 as a factor." },
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let attempts = 0;
+    let timer;
+    const maxAttempts = 2;
+    const questionTime = 25;
+
+    function createBubbles() {
+      const container = document.getElementById('bubbles-container');
+      for (let i = 0; i < 50; i++) {
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.style.width = `${Math.random() * 30 + 10}px`;
+        bubble.style.height = bubble.style.width;
+        bubble.style.left = `${Math.random() * 100}vw`;
+        bubble.style.animationDuration = `${Math.random() * 10 + 5}s`;
+        bubble.style.animationDelay = `${Math.random() * 5}s`;
+        container.appendChild(bubble);
+        
+        bubble.addEventListener('click', () => {
+          document.getElementById('bubbleSound').play();
+          createClickEffect(bubble);
+          bubble.style.animation = 'none';
+          setTimeout(() => {
+            bubble.style.animation = `float-up ${Math.random() * 10 + 5}s linear ${Math.random() * 5}s infinite`;
+          }, 10);
+        });
+      }
+    }
+
+    function createJellyfish() {
+      const container = document.getElementById('jellyfish-container');
+      for (let i = 0; i < 3; i++) {
+        const jelly = document.createElement('div');
+        jelly.className = 'jellyfish';
+        jelly.innerHTML = '🎐';
+        jelly.style.fontSize = `${Math.random() * 30 + 30}px`;
+        jelly.style.left = `${Math.random() * 80 + 10}vw`;
+        jelly.style.top = `${Math.random() * 80 + 10}vh`;
+        jelly.style.animationDelay = `${Math.random() * 5}s`;
+        container.appendChild(jelly);
+      }
+    }
+
+    function createSeaCreatures() {
+      const creatures = [
+        { emoji: '🐠', size: '40px', duration: '30s', delay: '0s', top: '20vh' },
+        { emoji: '🐟', size: '50px', duration: '40s', delay: '5s', top: '40vh' },
+        { emoji: '🐡', size: '60px', duration: '50s', delay: '10s', top: '60vh' },
+        { emoji: '🦈', size: '70px', duration: '35s', delay: '15s', top: '30vh' },
+        { emoji: '🐋', size: '80px', duration: '45s', delay: '20s', top: '50vh' }
+      ];
+      
+      const container = document.getElementById('sea-creatures-container');
+      creatures.forEach((creature) => {
+        const element = document.createElement('div');
+        element.className = 'sea-creature';
+        element.innerHTML = creature.emoji;
+        element.style.fontSize = creature.size;
+        element.style.top = creature.top;
+        element.style.animationDuration = creature.duration;
+        element.style.animationDelay = creature.delay;
+        container.appendChild(element);
+        
+        element.addEventListener('mouseenter', () => {
+          element.style.transform = 'scale(1.3) rotate(10deg)';
+          element.style.animationPlayState = 'paused';
+        });
+        
+        element.addEventListener('mouseleave', () => {
+          element.style.transform = '';
+          element.style.animationPlayState = 'running';
+        });
+        
+        element.addEventListener('click', () => {
+          element.style.animationDuration = `${Math.random() * 20 + 20}s`;
+          createClickEffect(element);
+        });
+      });
+    }
+
+    function createClickEffect(element) {
+      const rect = element.getBoundingClientRect();
+      const effect = document.createElement('div');
+      effect.className = 'click-effect';
+      effect.style.left = `${rect.left + rect.width/2 - 15}px`;
+      effect.style.top = `${rect.top + rect.height/2 - 15}px`;
+      document.body.appendChild(effect);
+      
+      setTimeout(() => {
+        effect.remove();
+      }, 600);
+    }
+
+    function createConfetti() {
+      const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = `${Math.random() * 100}vw`;
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.animationDuration = `${Math.random() * 2 + 1}s`;
+        confetti.style.width = `${Math.random() * 10 + 5}px`;
+        confetti.style.height = confetti.style.width;
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => {
+          confetti.remove();
+        }, 3000);
+      }
+    }
+
+    function playSound(isCorrect) {
+      const correct = document.getElementById("correctSound");
+      const wrong = document.getElementById("wrongSound");
+      const cheer = document.getElementById("cheerSound");
+      
+      if (isCorrect) {
+        correct.play();
+      } else {
+        wrong.play();
+      }
+    }
+
+    function showQuestion(index) {
+      clearInterval(timer);
+      document.getElementById("explanation").classList.add("hidden");
+      attempts = 0;
+
+      const block = document.getElementById("question-block");
+      block.classList.remove("fadeIn");
+      void block.offsetWidth;
+      block.classList.add("fadeIn");
+
+      const q = questions[index];
+      document.getElementById("question").innerText = `Question ${index + 1}: ${q.q}`;
+      document.getElementById("progress").style.width = `${(index / (questions.length - 1)) * 100}%`;
+      
+      const optionsDiv = document.getElementById("options");
+      optionsDiv.innerHTML = "";
+      q.options.forEach((opt, i) => {
+        const div = document.createElement("div");
+        div.classList.add("option");
+        div.innerText = opt;
+        div.onclick = () => checkAnswer(i);
+        optionsDiv.appendChild(div);
+      });
+      startTimer();
+    }
+
+    function checkAnswer(selected) {
+      const options = document.querySelectorAll('.option');
+      const correctIndex = questions[currentQuestion].answer;
+      
+      if (selected === correctIndex) {
+        playSound(true);
+        options[selected].classList.add('correct-answer');
+        createConfetti();
+        score++;
+        setTimeout(() => {
+          document.getElementById("explanation").classList.add("hidden");
+          nextQuestion();
+        }, 1000);
+      } else {
+        playSound(false);
+        options[selected].classList.add('wrong-answer');
+        attempts++;
+        if (attempts >= maxAttempts) {
+          options[correctIndex].classList.add('correct-answer');
+          document.getElementById("explanation").classList.remove("hidden");
+          document.getElementById("explanation").innerText =
+            `🐠 Correct Answer: ${questions[currentQuestion].options[correctIndex]}\n\n${questions[currentQuestion].explanation}`;
+          setTimeout(nextQuestion, 3000);
+        }
+      }
+    }
+
+    function nextQuestion() {
+      if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        showQuestion(currentQuestion);
+      } else {
+        showScore();
+      }
+    }
+
+    function prevQuestion() {
+      if (currentQuestion > 0) {
+        currentQuestion--;
+        showQuestion(currentQuestion);
+      }
+    }
+
+    function showScore() {
+      clearInterval(timer);
+      document.getElementById("question").innerText = "Great Job! 🎉";
+      document.getElementById("options").innerHTML = "";
+      document.getElementById("timer").innerText = "";
+      document.getElementById("explanation").classList.add("hidden");
+      document.getElementById("progress").style.width = "100%";
+      
+      const percentage = (score / questions.length) * 100;
+      let stars = "";
+      if (percentage >= 90) stars = "⭐⭐⭐⭐⭐";
+      else if (percentage >= 70) stars = "⭐⭐⭐⭐";
+      else if (percentage >= 50) stars = "⭐⭐⭐";
+      else if (percentage >= 30) stars = "⭐⭐";
+      else stars = "⭐";
+      
+      document.getElementById("scorecard").classList.remove("hidden");
+      document.getElementById("scorecard").innerHTML = `
+        <div>You scored ${score} out of ${questions.length}!</div>
+        <div class="star-rating">${stars}</div>
+        <div>${getEncouragement(percentage)}</div>
+      `;
+      document.getElementById("retakeContainer").classList.remove("hidden");
+      
+      if (percentage >= 70) {
+        document.getElementById("cheerSound").play();
+        createConfetti();
+      }
+      
+      setTimeout(openTreasureChest, 1000);
+    }
+
+    function openTreasureChest() {
+      const treasureContainer = document.getElementById('treasureContainer');
+      const treasure = document.getElementById('treasureChest');
+      const treasureSound = document.getElementById('treasureSound');
+      
+      treasureContainer.classList.remove('hidden');
+      setTimeout(() => {
+        treasureContainer.classList.add('treasure-visible');
+        treasure.classList.add('treasure-open');
+        treasureSound.play();
+        
+        setTimeout(() => {
+          treasure.classList.add('treasure-revealed');
+        }, 500);
+        
+        setTimeout(() => {
+          treasure.classList.remove('treasure-open', 'treasure-revealed');
+          treasureContainer.classList.remove('treasure-visible');
+          setTimeout(() => {
+            treasureContainer.classList.add('hidden');
+          }, 500);
+        }, 4000);
+      }, 100);
+    }
+
+    function getEncouragement(percentage) {
+      if (percentage >= 90) return "Math Wizard! 🧙‍♂";
+      if (percentage >= 70) return "Awesome Work! 🌟";
+      if (percentage >= 50) return "Good Job! 👍";
+      if (percentage >= 30) return "Keep Practicing! 📚";
+      return "Try Again! You Can Do It! 💪";
+    }
+
+    function startTimer() {
+      let timeLeft = questionTime;
+      document.getElementById("timer").innerText = `⏱ Time: ${timeLeft}s`;
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById("timer").innerText = `⏱ Time: ${timeLeft}s`;
+        if (timeLeft <= 10) {
+          document.getElementById("timer").style.color = "#ff5252";
+          document.getElementById("timer").style.animation = "pulse 0.5s infinite alternate";
+        }
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          document.getElementById("explanation").classList.remove("hidden");
+          const correctIndex = questions[currentQuestion].answer;
+          document.getElementById("explanation").innerText =
+            `⏰ Time's up!\n\n🐠 Correct Answer: ${questions[currentQuestion].options[correctIndex]}\n\n${questions[currentQuestion].explanation}`;
+
+          setTimeout(nextQuestion, 3000);
+        }
+      }, 1000);
+    }
+
+    function startQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      document.getElementById("scorecard").classList.add("hidden");
+      document.getElementById("retakeContainer").classList.add("hidden");
+      document.getElementById("timer").style.color = "#ffeb3b";
+      document.getElementById("timer").style.animation = "pulse 1s infinite alternate";
+      
+      const treasureContainer = document.getElementById('treasureContainer');
+      treasureContainer.classList.add('hidden');
+      
+      showQuestion(currentQuestion);
+    }
+
+    window.onload = function() {
+      createBubbles();
+      createSeaCreatures();
+      createJellyfish();
+      startQuiz();
+      
+      const bgMusic = document.getElementById("bgMusic");
+      bgMusic.volume = 0.3;
+      
+      document.addEventListener('click', function(e) {
+        if (e.target.className !== 'option' && e.target.tagName !== 'BUTTON') {
+          createClickEffect({
+            getBoundingClientRect: () => ({
+              left: e.clientX,
+              top: e.clientY,
+              width: 0,
+              height: 0
+            })
+          });
+        }
+      });
+    };
+  </script>
+</body>
+</html>
